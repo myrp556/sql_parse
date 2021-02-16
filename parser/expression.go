@@ -101,7 +101,7 @@ func (node *QueryExpNode) Content() string {
     case ExpList:
         ret := "["
         for _, n := range node.List {
-            ret = ret + n.Content()
+            ret = ret + n.Content()+","
         }
         return ret + "]"
     case ExpExpression:
@@ -231,7 +231,7 @@ func parseNode(tokens []string, leftNode bool) (*QueryExpNode, error) {
         return node ,nil
     } else {
         //log.Println(fmt.Sprintf("-%v", tokens))
-        if len(tokens)>=2 && tokens[0]=="(" && tokens[len(tokens)-1]==")" {
+        if len(tokens)>=2 && (tokens[0]=="(" && tokens[len(tokens)-1]==")") {
             return parseNode(tokens[1:len(tokens)-1], leftNode)
         }
 
