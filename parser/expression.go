@@ -75,7 +75,7 @@ func (node *QueryExpNode) check() (bool, error) {
             if t==ExpIntValue || t==ExpStrValue {
                 for _, n := range node.List {
                     if n.Type != t {
-                        return false, ErrInvalidList
+                        //return false, ErrInvalidList
                     }
                 }
             } else {
@@ -240,7 +240,7 @@ func parseNode(tokens []string, leftNode bool) (*QueryExpNode, error) {
             token := tokens[0]
             if len(token)==0 || (token[0:1]=="'"&&token[len(token)-1:len(token)]=="'") {
                 node.Type = ExpStrValue
-                node.StrValue = token[1:len(token)]
+                node.StrValue = token[1:len(token)-1]
             } else {
                 if v,err:=strconv.ParseInt(tokens[0], 10, 64); err==nil {
                     node.Type = ExpIntValue

@@ -19,6 +19,7 @@ type QueryResult struct {
     Type QueryType
 
     Select SelectStmt
+    Insert InsertStmt
 }
 
 type SQLParser struct {
@@ -51,6 +52,12 @@ func (parser *SQLParser) peekToken() string {
     }
 
     return parser.tokensRaw[0]
+}
+
+func (parser *SQLParser) popAllToken() []string {
+    tokens := parser.tokensRaw
+    parser.tokensRaw = []string{}
+    return tokens
 }
 
 func (parser *SQLParser) popTokenUntil(pattern string) ([]string, error) {
@@ -101,6 +108,12 @@ func (parser *SQLParser) parse(query string) (QueryResult, error) {
             result.Select = stmt
         }
     case "INSERT":
+        result.Type = InsertQuery
+        if stmt, err:=parser.parseInsertStmt(); err!=nil {
+            return QueryResult{}, err
+        } else {
+            result.Insert = stmt
+        }
     case "DELETE":
     case "UPDATE":
     default:
@@ -130,4 +143,6 @@ var (
     ErrUnknownQuery = errors.New("unknown query type")
     ErrInvalidQuery = errors.New("invalid query string")
     ErrUnsupported = errors.New("unsupported expression")
+    ErrNoTableSpe = errors.New("no table specific")
+    //ErrInvalidCol = errors.New("invalid column")
 )

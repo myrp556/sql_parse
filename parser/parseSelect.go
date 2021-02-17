@@ -51,7 +51,8 @@ func (parser *SQLParser) parseSelectWhere() (*QueryExpNode, error) {
 }
 
 func (parser *SQLParser) parseSelectStmt() (SelectStmt, error) {
-    parser.tokensRaw = parser.tokensRaw[1:]
+    //parser.tokensRaw = parser.tokensRaw[1:]
+    parser.popToken()
     stmt := SelectStmt {}
 
     fields, err := parser.parseSelectFields()
