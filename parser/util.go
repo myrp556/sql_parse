@@ -3,6 +3,7 @@ package parser
 import (
     "fmt"
     "strconv"
+    "strings"
 )
 
 type RowUnit struct {
@@ -87,7 +88,21 @@ func getRowUnitFromNode(node *QueryExpNode) (RowUnit, error) {
     }
 }
 
-func (parser *SQLParser) parseSelectWhere() (*QueryExpNode, error) {
+func (parser *SQLParser) parseFields() ([]string, error) {
+    fields, err := parser.popTokenUntil("FROM")
+    if err!=nil {
+        return []string{}, err
+    }
+
+    fields = strings.Split(strings.ReplaceAll(strings.Join(fields, ""),  " ", ""), ",")
+    if err != nil {
+        return []string{}, err
+    }
+
+    return fields, nil
+}
+
+func (parser *SQLParser) parseWhere() (*QueryExpNode, error) {
     tokens := []string {}
     loop:
     for ;!parser.emptyToken(); {

@@ -1,7 +1,7 @@
 package parser
 
 import (
-//    "strings"
+    "strings"
 //    "log"
     "fmt"
 )
@@ -22,45 +22,33 @@ func (stmt *SelectStmt) Content() string {
     return ret
 }
 
-func (parser *SQLParser) parseSelectFields() ([]string, error) {
-    fields, err := parser.popTokenUntil("FROM")
-    if err!=nil {
-        return []string{}, err
-    }
-
-    fields, err = parser.parseFields(fields)
-    if err != nil {
-        return []string{}, err
-    }
-
-    return fields, nil
-}
-
 func (parser *SQLParser) parseSelectStmt() (SelectStmt, error) {
-    //parser.tokensRaw = parser.tokensRaw[1:]
-    parser.popToken()
-    stmt := SelectStmt {}
-
-    fields, err := parser.parseSelectFields()
-    if err != nil {
-        return SelectStmt{}, err
-    }
-
-    if parser.peekToken() != "FROM" {
-        return SelectStmt{}, ErrInvalidQuery
-    }
-    parser.popToken()
-    table := parser.popToken()
+    fields := []string {}
+    var table string
+    var where *QueryExpNode
 
     loop:
     for ;!parser.emptyToken(); {
-        switch parser.peekToken() {
+        switch strings.ToUpper(parser.peekToken()) {
+        case "SELECT":
+            parser.popToken()
+            if f, err := parser.parseFields(); err!=nil {
+                return SelectStmt{}, err
+            } else {
+                fields = f
+            }
+        case "FROM":
+            parser.popToken()
+            table := parser.popToken()
+            if len(table)==0 {
+                return SelectStmt{}, ErrNoTableSpe
+            }
         case "WHERE":
-            node, err := parser.parseSelectWhere()
+            node, err := parser.parseWhere()
             if err != nil {
                 return SelectStmt{}, err
             }
-            stmt.Where = node
+            where = node
         case "":
             break loop
         default:
@@ -68,7 +56,9 @@ func (parser *SQLParser) parseSelectStmt() (SelectStmt, error) {
         }
     }
 
+    stmt := SelectStmt {}
     stmt.Fields = fields
-    stmt.Table =table 
+    stmt.Table =table
+    stmt.Where = where
     return stmt, nil
 }

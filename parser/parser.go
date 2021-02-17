@@ -89,10 +89,6 @@ func (parser *SQLParser) parseToken(query string) error {
     return nil
 }
 
-func (parser *SQLParser) parseFields(fields []string) ([]string, error) {
-    return strings.Split(strings.ReplaceAll(strings.Join(fields, ""),  " ", ""), ","), nil
-}
-
 func (parser *SQLParser) parse(query string) (QueryResult, error) {
     result := QueryResult {}
 
@@ -158,5 +154,6 @@ var (
     ErrInvalidQuery = errors.New("invalid query string")
     ErrUnsupported = errors.New("unsupported expression")
     ErrNoTableSpe = errors.New("no table specific")
+    ErrNoValueSpe = errors.New("no value specific")
     //ErrInvalidCol = errors.New("invalid column")
 )

@@ -47,7 +47,7 @@ func (parser *SQLParser) parseUpdateStmt() (UpdateStmt, error) {
             parser.popToken()
             sets, _ := parser.popTokenUntil("WHERE")
             if len(sets) == 0{
-                return UpdateStmt{}, ErrNoTableSpe
+                return UpdateStmt{}, ErrNoValueSpe
             }
             
             //log.Println(fmt.Sprintf("%v", sets))
@@ -72,7 +72,7 @@ func (parser *SQLParser) parseUpdateStmt() (UpdateStmt, error) {
                 }
             }
         case "WHERE":
-            if node, err:=parser.parseSelectWhere(); err!=nil {
+            if node, err:=parser.parseWhere(); err!=nil {
                 return UpdateStmt{}, err
             } else {
                 where = node
