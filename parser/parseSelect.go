@@ -9,12 +9,12 @@ import (
 type SelectStmt struct {
 
     Fields []string
-    From string
+    Table string
     Where *QueryExpNode
 }
 
 func (stmt *SelectStmt) Content() string {
-    ret := fmt.Sprintf("select %s from %v", stmt.Fields, stmt.From)
+    ret := fmt.Sprintf("select %s from %v", stmt.Fields, stmt.Table)
     if where:=stmt.Where.Content(); len(where)>0 {
         ret = ret + fmt.Sprintf(" where %s", where)
     }
@@ -36,20 +36,6 @@ func (parser *SQLParser) parseSelectFields() ([]string, error) {
     return fields, nil
 }
 
-func (parser *SQLParser) parseSelectWhere() (*QueryExpNode, error) {
-    tokens := []string {}
-    loop:
-    for ;!parser.emptyToken(); {
-        switch parser.peekToken() {
-        case "", "LIMIT", "GROUP", "BY", "ORDER":
-            break loop
-        }
-        tokens = append(tokens, parser.popToken())
-    }
-
-    return parseExpression(tokens[1:])
-}
-
 func (parser *SQLParser) parseSelectStmt() (SelectStmt, error) {
     //parser.tokensRaw = parser.tokensRaw[1:]
     parser.popToken()
@@ -64,7 +50,7 @@ func (parser *SQLParser) parseSelectStmt() (SelectStmt, error) {
         return SelectStmt{}, ErrInvalidQuery
     }
     parser.popToken()
-    from := parser.popToken()
+    table := parser.popToken()
 
     loop:
     for ;!parser.emptyToken(); {
@@ -83,6 +69,6 @@ func (parser *SQLParser) parseSelectStmt() (SelectStmt, error) {
     }
 
     stmt.Fields = fields
-    stmt.From = from
+    stmt.Table =table 
     return stmt, nil
 }

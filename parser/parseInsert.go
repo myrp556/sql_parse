@@ -2,7 +2,6 @@ package parser
 
 import (
     "strings"
-    "strconv"
     "fmt"
     "log"
 )
@@ -15,33 +14,13 @@ const (
     UnknownRowUnit UnitType = "KnownRowUnit"
 )
 
-type RowUnit struct {
-    Type UnitType
-    Col string
-    IntValue  int64
-    StrValue  string
-}
-
-func (unit *RowUnit) Content() string {
-    switch unit.Type {
-    case IntRowUnit:
-        return fmt.Sprintf("'%s': %v", unit.Col, unit.IntValue)
-    case StrRowUnit:
-        return fmt.Sprintf("'%s': '%v'", unit.Col, unit.StrValue)
-    case UnknownRowUnit:
-        return fmt.Sprintf("UNKNOWN")
-    default:
-        return "?"
-    }
-}
-
 type InsertStmt struct {
     Table string
     Lists [][]RowUnit
 }
 
 func (stmt *InsertStmt) Content() string {
-    ret := "select " + stmt.Table + " ("
+    ret := "insert " + stmt.Table + " ("
     for _, lis := range stmt.Lists {
         str := "("
         for _, unit := range lis {
@@ -53,40 +32,6 @@ func (stmt *InsertStmt) Content() string {
     ret = ret +")"
 
     return ret
-}
-
-func getRowUnit(i int, colNode *QueryExpNode, valNode *QueryExpNode) RowUnit {
-    unit := RowUnit{}
-
-    if colNode!=nil {
-        switch colNode.Type {
-        case ExpStrValue:
-            unit.Col = colNode.StrValue
-        case ExpIntValue:
-            unit.Col = strconv.Itoa(int(colNode.IntValue))
-        default:
-            unit.Col = strconv.Itoa(i)
-        }
-    } else {
-        unit.Col = strconv.Itoa(i)
-    }
-
-    if valNode!=nil {
-        switch valNode.Type {
-        case ExpStrValue:
-            unit.Type = StrRowUnit
-            unit.StrValue = valNode.StrValue
-        case ExpIntValue:
-            unit.Type = IntRowUnit
-            unit.IntValue = valNode.IntValue
-        default:
-            unit.Type = UnknownRowUnit
-        }
-    } else {
-        unit.Type = UnknownRowUnit
-    }
-
-    return unit
 }
 
 func parseInsertRow(cols []string, vals []string) ([]RowUnit, error) {
@@ -111,7 +56,6 @@ func parseInsertRow(cols []string, vals []string) ([]RowUnit, error) {
         ((colNode.Type==ExpList&&valNode.Type==ExpList&&len(colNode.List)!=len(valNode.List)) ||
          (colNode.Type!=valNode.Type && (colNode.Type==ExpList || valNode.Type==ExpList)))) {
 
-        log.Println(fmt.Sprintf("1"))
         return nil, ErrInvalidQuery
     }
 

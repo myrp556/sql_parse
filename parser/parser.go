@@ -20,6 +20,8 @@ type QueryResult struct {
 
     Select SelectStmt
     Insert InsertStmt
+    Update UpdateStmt
+    Delete DeleteStmt
 }
 
 type SQLParser struct {
@@ -114,8 +116,20 @@ func (parser *SQLParser) parse(query string) (QueryResult, error) {
         } else {
             result.Insert = stmt
         }
-    case "DELETE":
     case "UPDATE":
+        result.Type = UpdateQuery
+        if stmt, err:=parser.parseUpdateStmt(); err!=nil {
+            return QueryResult{}, err
+        } else {
+            result.Update = stmt
+        }
+    case "DELETE":
+        result.Type = DeleteQuery
+        if stmt, err:=parser.parseDeleteStmt(); err!=nil {
+            return QueryResult{}, err
+        } else {
+            result.Delete = stmt
+        }
     default:
         //return QueryResult{}, ErrUnknownQuery
     }

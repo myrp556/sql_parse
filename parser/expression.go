@@ -191,6 +191,7 @@ func parseNode(tokens []string, leftNode bool) (*QueryExpNode, error) {
     var operation ExpOperation
     opIndex := -1
     opRank := 0
+    commaIndex := []int{}
     for i:=len(tokens)-1; i>=0; i-- {
         token := tokens[i]
         switch token {
@@ -199,6 +200,9 @@ func parseNode(tokens []string, leftNode bool) (*QueryExpNode, error) {
         case ")":
             quote --
         case ",":
+            if quote == 0 {
+                commaIndex = append(commaIndex, i)
+            }
             // nothing
         default:
             if quote==0 && isOp(token) {
@@ -213,6 +217,30 @@ func parseNode(tokens []string, leftNode bool) (*QueryExpNode, error) {
 
     }
 
+    if len(commaIndex) >0 {
+        commaIndex = reverse(commaIndex)
+        commaIndex = append(commaIndex, len(tokens))
+        last := 0
+        lis := []*QueryExpNode {}
+        for _, i := range commaIndex {
+            if last < i {
+                if node, err:=parseNode(tokens[last:i], false); err!=nil {
+                    return nil, err
+                } else {
+                    lis = append(lis, node)
+                }
+            }
+            last = i+1
+        }
+
+        node := &QueryExpNode{}
+        node.Type = ExpList
+        node.List = lis
+
+        return node, nil
+    }
+
+    //log.Println(fmt.Sprintf("-%v", tokens))
     if opIndex > 0 {
         node := &QueryExpNode{}
         node.Type = ExpExpression
@@ -230,7 +258,6 @@ func parseNode(tokens []string, leftNode bool) (*QueryExpNode, error) {
         node.Right = right
         return node ,nil
     } else {
-        //log.Println(fmt.Sprintf("-%v", tokens))
         if len(tokens)>=2 && (tokens[0]=="(" && tokens[len(tokens)-1]==")") {
             return parseNode(tokens[1:len(tokens)-1], leftNode)
         }
